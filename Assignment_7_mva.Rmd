@@ -1,0 +1,563 @@
+---
+title: "Assignment_7_MVA"
+output: html_document
+date: "2024-03-24"
+---
+
+Answers are computed in the below code 
+
+
+```{R}
+
+# Factor Analysis
+
+library(psych)
+
+
+#for loading csv data
+library(readr)
+
+# Read the CSV file
+df <- read_csv("C:/Rutgers/Subjects/Spring Sem/Multivariate Analysis/Data/wine_new.csv")
+
+#dataframe
+df
+
+
+```
+
+```{R}
+
+# Assuming df is your dataframe
+attach(df)
+
+#selected these columns because of positive and negative correlation, other columns were not beneficial for analysis
+selected_cols <- df
+
+
+selected_cols
+```
+
+
+
+Data Pre-processing:
+
+Group by to calculate mean for all the attributes per target variable value.
+
+```{R}
+
+# Group by column 6 and calculate the average of all other columns within each group
+grouped_avg <- aggregate(. ~ quality, data = selected_cols[, -4], FUN = mean)
+
+# Print the grouped averages
+print(grouped_avg)
+
+```
+
+
+
+
+
+```{r}
+# Set the first column as row names
+row.names(grouped_avg) <- grouped_avg[, 1]  # Assuming the first column contains row names
+
+# Remove the first column from the dataframe
+grouped_avg <- grouped_avg[, -1]
+
+# View the dataframe
+grouped_avg
+```
+
+2. Explain the output for your factor model 
+
+principal(): This function from the psych package in R is used to perform PCA.
+
+nfactors=3: This parameter specifies the number of factors or components to be extracted from the data. In this case, it's set to 3, indicating that the analysis will produce three principal components.
+
+rotate="varimax": This parameter specifies the rotation method to be applied to the extracted components. "Varimax" is a common rotation method used in PCA to simplify the interpretation of the components by maximizing the variance of the squared loadings within each component.
+
+
+[1] Observation 1:
+
+Variance Explained: The three principal components (RC1, RC2, RC3) collectively explain a significant portion of the variance in the data. Specifically, RC1 accounts for 50% of the total variance, RC2 explains 26%, and RC3 explains 23%. Together, these components cumulatively explain 98% of the total variance in the data.
+
+Fit of the Model: The analysis suggests that the chosen model with three components provides a good fit to the data. This is supported by the root mean square of the residuals (RMSR) of 0.01, indicating that the model residuals are relatively small. Additionally, the empirical chi-square value of 0.09 with a probability greater than 1 suggests that the model fits the data well.
+
+Mean Item Complexity: The average complexity of the items in the analysis is 1.5, indicating that the variables in the dataset have moderate complexity in contributing to the principal components.
+
+Overall, the PCA results suggest that the three principal components derived from the dataset adequately summarize the underlying structure of the data, with a high proportion of variance explained and a good fit of the model to the data.
+
+
+RMSR of 0.01 suggests that the model's residuals, or the differences between the observed and predicted values, are quite small, indicating a good fit of the model to the data.
+
+empirical chi-square value of 0.09 indicates a good fit of the model to the data.
+
+[2] Observation 2:
+
+
+[1] We have 3 component factors: RC1, RC2 and RC3
+
+RC1 - has high positive correlation with: density, chlorides and Volatile acidity
+
+RC1 - negative correlation with:  alcohol and citric acid
+
+RC2 - High positive correlation with Sulphur dioxide components
+
+RC3 - High negative correlation with pH
+
+
+h2 analysis:
+[2]  "fixed acidity" has an h2 value of 0.95, indicating that 95% of its variance is explained by the principal components.
+
+[2] "alcohol" has h2 values of 0.99 indicating that 99% of its variance is explained by principal components.
+
+
+Com (Communality):
+These values represent the proportion of variance in each variable that is accounted for by the principal components.
+
+It is calculated as 1 - u2.
+
+Higher values indicate that more variance in the variable is explained by the principal components.
+
+For example, "fixed acidity" has a communality of 2.0, indicating that 2.0 units of variance are explained by the principal components.
+```{R}
+
+fit.pc <- principal(grouped_avg[-1], nfactors=3, rotate="varimax")
+fit.pc
+
+```
+
+
+These eigenvalues represent the amount of variance explained by each principal component. The higher the eigenvalue, the more variance the corresponding principal component explains in the dataset. In this case, PC1 explains the highest amount of variance, followed by PC2, PC3, and so on.
+
+```{r}
+round(fit.pc$values, 3)
+```
+
+Loadings:
+
+Variables with higher absolute loadings (close to 1 or -1) on a particular principal component contribute more to that component's interpretation.
+
+Observations:
+
+negative correlations for loadings:
+[1] "alcohol" has a high negative loading on RC1 (-0.913) 
+
+[2] sulphates = -0.943 
+
+Positive correlations:
+[3] density =  0.964
+
+[3] "volatile acidity" has a high positive loading on RC1 (0.811), indicating that these variables strongly contribute to RC1.
+
+
+```{r}
+fit.pc$loadings
+```
+
+
+
+These values represent the standardized loadings of the variables on each principal component. They indicate the strength and direction of the relationship between each variable and the corresponding component.
+
+Loadings for RC1:
+-0.3805855: This indicates that there is a negative relationship between the variable represented by this loading and the first principal component (RC1). The closer the value is to -1, the stronger the negative relationship.
+
+
+Loadings for RC3:
+-0.4155047: This also indicates a negative relationship between the variable represented by this loading and the third principal component (RC3). Similarly, the closer the value is to -1, the stronger the negative relationship.
+
+
+Loadings for RC2:
+0.7945425: This value indicates a positive relationship between the variable represented by this loading and the second principal component (RC2). The closer the value is to 1, the stronger the positive relationship.
+
+
+These loadings help in understanding the contribution of each variable to each principal component. Positive loadings indicate that the variable increases as the component increases, while negative loadings indicate the opposite.
+```{R}
+# Loadings with more digits
+for (i in c(1,3,2)) { print(fit.pc$loadings[[1,i]])}
+```
+
+
+Observations:
+
+[1] Fixed Acidity: 94.88% of the variance in fixed acidity is explained by the principal components.
+
+Volatile Acidity: 98.62% of the variance in volatile acidity is explained by the principal components.
+
+Citric Acid: 99.78% of the variance in citric acid is explained by the principal components.
+
+Chlorides: 99.94% of the variance in chlorides is explained by the principal components.
+
+Free Sulfur Dioxide: 97.81% of the variance in free sulfur dioxide is explained by the principal components.
+
+Total Sulfur Dioxide: 99.07% of the variance in total sulfur dioxide is explained by the principal components.
+
+Density: 98.44% of the variance in density is explained by the principal components.
+
+pH: 95.38% of the variance in pH is explained by the principal components.
+
+Sulphates: 99.86% of the variance in sulphates is explained by the principal components.
+
+Alcohol: 99.95% of the variance in alcohol is explained by the principal components.
+
+These values indicate how well each variable is represented by the principal components. Higher communalities suggest that the variable is well captured by the principal components and contributes significantly to the underlying structure.
+
+```{r}
+# Communalities
+fit.pc$communality
+```
+
+
+RC1:
+
+Observation 2: This observation has the highest positive score on RC1 among all observations, indicating a strong positive association with the factors represented by RC1. This suggests that Observation 2 is strongly influenced by the characteristics or variables captured by RC1.
+
+
+
+RC2:
+
+Observation 3: This observation has the highest negative score on RC2, suggesting a strong negative association with the underlying factors represented by RC2. This indicates that Observation 3 differs significantly from other observations in terms of the variables or characteristics represented by RC2.
+
+
+RC3:
+
+Observation 1: This observation has the highest positive score on RC3, indicating a strong positive association with the factors represented by RC3. This suggests that Observation 1 exhibits distinct characteristics or variables compared to other observations, as captured by RC3.
+
+```{R}
+# Rotated factor scores, Notice the columns ordering: RC1, RC3, RC2 and RC4
+fit.pc$scores
+```
+
+1. Decide how many Factors are ideal for your dataset 
+Ans: As per analysis 2-3 factors are best as per the elbow
+
+
+
+
+Observations:
+
+[1] 2 RCA's see, to indicate most of the variance before the elbow point. Indicating that we should only use 2 factors ideally, as RCA's.
+
+[2] rest of the points are below the reference line and cover up less variance.
+```{r}
+
+# Play with FA utilities
+
+fa.parallel(grouped_avg[-1]) # See factor recommendation
+```
+
+
+```{r}
+fa.plot(fit.pc) # See Correlations within Factors
+
+```
+
+Component Analysis:
+
+3. Show the columns that go into each factor 
+
+
+Correlation of variables to factors and contribution of each variable
+
+RC1: 
+density, chlorides and volatile acidity are positively correlated with RC1 
+
+sulphates and alcohol have high negative correlation with RC1
+
+
+RC3:
+[1] pH has negative correlation with RC3
+
+[2] Citric acid and fixed acidity is negatively correlated to RC3
+```{R}
+fa.diagram(fit.pc) # Visualize the relationship
+```
+
+
+4. Perform some visualizations using the factors 
+
+[1] 2-3 factors are the points where the elbows are present
+
+[2] 2 factors are the best as per elbow present at 2nd point after that the line is not very vertical
+```{r}
+plot(fit.pc$values, type="b", main="Scree Plot")
+```
+
+
+3. Show the columns that go into each factor 
+
+Observation:
+
+Used bar plot to map each attribute in respective factors.
+
+
+
+Correlation of variables to factors and contribution of each variable
+
+RC1: 
+density, chlorides and volatile acidity are positively correlated with RC1 
+
+sulphates and alcohol have high negative correlation with RC1
+
+
+RC3:
+[1] pH has negative correlation with RC3
+
+[2] Citric acid and fixed acidity is negatively correlated to RC3
+```{R}
+# Calculate the absolute values of factor loadings
+loadings_abs <- abs(fit.pc$loadings)
+
+# Create a bar plot for factor loadings
+barplot(t(loadings_abs), beside = TRUE, col = rainbow(ncol(loadings_abs)),
+        main = "Absolute Factor Loadings", xlab = "Variables", ylab = "Loadings",
+        legend.text = TRUE, las = 2, cex.names = 0.8)  # Rotate x-axis labels and adjust their size
+
+# Rotate x-axis labels to vertical position and adjust their size
+
+```
+
+
+
+The VSS scores suggest that a very simple structure with 2 factors achieves a high level of fit.
+
+The Velicer MAP suggests that 1 factor may be sufficient.
+However, the BIC and Sample Size Adjusted BIC favor a 3-factor solution, as indicated by the lowest values.
+
+Overall, considering all the criteria, a 3-factor solution seems to be the most appropriate choice for this factor analysis.
+
+We get best results when factors are 2 as per Very Simple Structure Life
+```{R}
+vss(grouped_avg[-1]) # See Factor recommendations for a simple structure
+
+
+```
+
+
+High Positive Correlations:
+
+volatile acidity & citric acid: They exhibit a strong negative correlation of approximately -0.80, indicating that as one variable increases, the other tends to decrease, and vice versa.
+
+chlorides & density: They show a strong positive correlation of approximately 0.96, suggesting that as one variable increases, the other also tends to increase, and vice versa.
+
+volatile acidity & chlorides: They have a strong positive correlation of approximately 0.96, indicating a similar trend as chlorides and density.
+
+Moderate Positive Correlations:
+
+free sulfur dioxide & total sulfur dioxide: They demonstrate a moderate positive correlation of approximately 0.91, suggesting a moderate relationship between these two variables.
+
+
+density & pH: They exhibit a moderate positive correlation of approximately 0.71, indicating a moderate positive relationship between the density and pH of the solution.
+Strong Negative Correlations:
+
+sulphates & chlorides: They display a strong negative correlation of approximately -0.99, indicating that as one variable increases, the other tends to decrease, and vice versa.
+
+sulphates & density: They show a strong negative correlation of approximately -0.98, suggesting an inverse relationship between sulphates and density.
+
+
+Moderate Negative Correlations:
+
+pH & citric acid: They have a moderate negative correlation of approximately -0.92, indicating an inverse relationship between pH and citric acid.
+
+
+pH & sulphates: They exhibit a moderate negative correlation of approximately -0.75, suggesting an inverse relationship between pH and sulphates.
+```{R}
+
+matstd.can <- scale(grouped_avg)
+matstd.can
+```
+
+Volatile Acidity and Citric Acid:
+
+They have a strong negative correlation of approximately -0.80, suggesting that as the volatile acidity increases, the citric acid tends to decrease, and vice versa.
+Chlorides and Density:
+
+They exhibit a strong positive correlation of approximately 0.96, indicating that as the concentration of chlorides increases, the density also tends to increase.
+Free Sulfur Dioxide and Total Sulfur Dioxide:
+
+They show a moderate positive correlation of approximately 0.91, suggesting that the levels of free sulfur dioxide and total sulfur dioxide tend to increase together.
+Sulphates and Chlorides:
+
+They display a strong negative correlation of approximately -0.99, indicating an inverse relationship between sulphates and chlorides.
+pH and Citric Acid:
+
+They have a moderate negative correlation of approximately -0.92, suggesting an inverse relationship between pH and citric acid.
+Sulphates and Density:
+
+They exhibit a strong negative correlation of approximately -0.98, indicating an inverse relationship between sulphates and density.
+Alcohol and Chlorides:
+
+They show a strong negative correlation of approximately -0.96, suggesting that as the alcohol content increases, the concentration of chlorides tends to decrease.
+
+```{r}
+
+# Computing Correlation Matrix
+corrm.emp <- cor(grouped_avg[-1])
+corrm.emp
+```
+
+
+
+```{R}
+plot(corrm.emp)
+```
+
+
+
+
+
+```{R}
+
+grouped_avg_pca <- prcomp(grouped_avg[-1], scale=TRUE)
+summary(grouped_avg_pca)
+plot(grouped_avg_pca)
+
+```
+
+
+
+The first principal component explains the highest variance with an eigenvalue of 6.337.
+The second principal component explains a substantial amount of variance with an eigenvalue of 2.109.
+The third principal component explains a moderate amount of variance with an eigenvalue of 0.478.
+The fourth to sixth principal components have eigenvalues of 0.063, 0.014, and 0.000 respectively, indicating diminishing contribution to the overall variance explained.
+````{R}
+# A table containing eigenvalues and %'s accounted, follows. Eigenvalues are the sdev^2
+(eigen_grouped_avg <- round(grouped_avg_pca$sdev^2,3))
+round(fit.pc$values, 3)
+```
+
+PC1 has the highest eigenvalue of 6.337, indicating that it explains the most variance in the data.
+
+PC2 follows with an eigenvalue of 2.109, explaining a significant amount of variance but less than PC1.
+
+PC3 has an eigenvalue of 0.478, explaining a moderate amount of variance compared to PC1 and PC2.
+
+PC4, PC5, and PC6 have eigenvalues of 0.063, 0.014, and 0.000 respectively, suggesting that they contribute very little to the overall variance in the data.
+```{r}
+names(eigen_grouped_avg) <- paste("PC", 1:6, sep="")
+eigen_grouped_avg
+```
+
+ the sum of the eigenvalues is 9.001. This value indicates the total amount of variance explained by all the principal components combined.
+```{R}
+sumlambdas <- sum(eigen_grouped_avg)
+sumlambdas
+```
+PC1 and PC2 are significant as per the proportion
+```{r}
+propvar <- round(eigen_grouped_avg/sumlambdas,2)
+propvar
+```
+```{R}
+cumvar_grouped_avg <- cumsum(propvar)
+cumvar_grouped_avg
+
+```
+```{R}
+matlambdas <- rbind(eigen_grouped_avg,propvar,cumvar_grouped_avg)
+matlambdas
+
+```
+```{R}
+rownames(matlambdas) <- c("Eigenvalues","Prop. variance","Cum. prop. variance")
+rownames(matlambdas)
+eigvec.emp <- grouped_avg_pca$rotation
+print(grouped_avg_pca)
+```
+```{R}
+# Taking the first four PCs to generate linear combinations for all the variables with four factors
+pcafactors.grouped_avg <- eigvec.emp[,1:4]
+pcafactors.grouped_avg
+```
+
+
+
+PC1 (Principal Component 1): It seems to be influenced strongly by variables like volatile acidity, citric acid, and density. These variables might be crucial in understanding the main patterns in the data.
+
+PC2 (Principal Component 2): This component is primarily influenced by free sulfur dioxide and total sulfur dioxide, suggesting a relationship between these two variables.
+
+PC3 (Principal Component 3): It appears to be influenced by variables like pH and sulphates, indicating a potential relationship between acidity and sulphates in the data.
+
+PC4 (Principal Component 4): This component shows weaker influences overall, but variables like alcohol and citric acid seem to have some influence here.
+
+Overall, these components help us understand which variables co
+```{R}
+# Multiplying each column of the eigenvector’s matrix by the square-root of the corresponding eigenvalue in order to get the factor loadings
+unrot.fact.grouped_avg <- sweep(pcafactors.grouped_avg,MARGIN=2,grouped_avg_pca$sdev[1:4],`*`)
+unrot.fact.grouped_avg
+```
+
+Volatile Acidity: Almost all of the variance in volatile acidity (around 99.8%) is explained by the extracted components. This suggests that the extracted components capture the variability in volatile acidity quite well.
+
+Citric Acid: Similarly, a high proportion (around 99.3%) of the variance in citric acid is accounted for by the extracted components, indicating a good fit of the model to this variable.
+
+Chlorides, Free Sulfur Dioxide, Total Sulfur Dioxide, Density, pH, Sulphates, Alcohol: These variables also show high communalities, ranging from approximately 99.7% to 99.9%, implying that the extracted components explain most of the variance in these variables.
+
+Overall, high communalities indicate that the extracted components capture a large portion of the variance in each variable, suggesting a good fit of the PCA model to the data.
+
+```{R}
+
+# Computing communalities
+communalities.grouped_avg <- rowSums(unrot.fact.grouped_avg^2)
+communalities.grouped_avg
+```
+```{R}
+# Performing the varimax rotation. The default in the varimax function is norm=TRUE thus, Kaiser normalization is carried out
+rot.fact.grouped_avg <- varimax(unrot.fact.grouped_avg)
+#View(unrot.fact.emp)
+rot.fact.grouped_avg
+
+```
+```{R}
+# The print method of varimax omits loadings less than abs(0.1). In order to display all the loadings, it is necessary to ask explicitly the contents of the object $loadings
+fact.load.grouped_avg <- rot.fact.grouped_avg$loadings[1:9,1:4]
+fact.load.grouped_avg
+```
+
+Volatile Acidity: It varies significantly across different quality categories, with "Bad" wines having the highest average volatile acidity and "Excellent" wines having the lowest.
+
+Citric Acid: "Excellent" wines tend to have the highest levels of citric acid, while "Poor" wines have the lowest. The difference between different quality categories is notable.
+
+Chlorides: Again, "Bad" wines exhibit the highest levels of chlorides, while "Excellent" wines have the lowest. This attribute also shows considerable variation across quality categories.
+
+Free Sulfur Dioxide and Total Sulfur Dioxide: Both attributes show a trend where "Bad" wines have higher levels compared to "Excellent" ones. However, the difference is not as pronounced as in other attributes.
+
+Density: There's a clear distinction between quality categories, with "Excellent" wines having significantly lower density compared to "Bad" wines, and other categories falling in between.
+
+pH: The pH levels seem to vary across different quality categories, with "Excellent" wines showing lower pH values compared to "Bad" wines.
+
+Sulphates: "Excellent" wines have notably higher levels of sulphates compared to other categories, while "Poor" wines have the lowest.
+
+Alcohol: Interestingly, "Good" wines seem to have a relatively lower alcohol content compared to other categories, while "Excellent" wines have the highest.
+```{R}
+# Computing the rotated factor scores for the 30 European Countries. Notice that signs are reversed for factors F2 (PC2), F3 (PC3) and F4 (PC4)
+scale.grouped_avg <- scale(grouped_avg[-1])
+scale.grouped_avg
+
+```
+PC1 (First Principal Component):
+
+Samples categorized as "Average" and "Bad" tend to have higher negative scores on PC1.
+Samples categorized as "Excellent" tend to have negative scores, albeit less than "Average" and "Bad".
+Samples categorized as "Good", "Poor", and "Very Good" tend to have lower or near-zero scores on PC1.
+PC2 (Second Principal Component):
+
+Samples categorized as "Average" have the highest negative scores on PC2.
+Samples categorized as "Bad" and "Poor" also have negative scores but less so compared to "Average".
+Samples categorized as "Excellent" and "Very Good" have positive scores, with "Excellent" having higher positive scores.
+Samples categorized as "Good" have relatively lower positive scores compared to "Excellent" and "Very Good".
+PC3 (Third Principal Component):
+
+Samples categorized as "Average" have positive scores on PC3.
+Samples categorized as "Good" have slightly negative scores on PC3.
+Samples categorized as "Excellent", "Bad", "Poor", and "Very Good" have varied scores on PC3, with no clear trend.
+PC4 (Fourth Principal Component):
+
+Samples categorized as "Average" and "Poor" have negative scores on PC4.
+Samples categorized as "Good" have a positive score on PC4.
+Samples categorized as "Bad", "Excellent", and "Very Good" have varied scores on PC4, with no clear trend.
+
+```{r}
+as.matrix(scale.grouped_avg)%*%fact.load.grouped_avg%*%solve(t(fact.load.grouped_avg)%*%fact.load.grouped_avg)
+```
